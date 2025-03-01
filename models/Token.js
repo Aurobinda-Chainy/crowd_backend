@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-var TokenSchema = new mongoose.Schema({
+const TokenSchema = new mongoose.Schema({
   _userId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -11,13 +10,11 @@ var TokenSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  createAt: {
+  createdAt: {
     type: Date,
     default: Date.now,
-    index: { expires: 86400 },
+    expires: 86400, // Token expires in 24 hours
   },
 });
 
-const Token = mongoose.model("Token", TokenSchema);
-
-module.exports = Token;
+module.exports = mongoose.model("Token", TokenSchema);

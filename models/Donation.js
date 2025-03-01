@@ -1,25 +1,29 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const DonationSchema = mongoose.Schema({
-  amount: {
-    type: Number,
-    default: 0,
+const DonationSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    campaign: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Campaign",
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Completed", "Failed"],
+      default: "Pending",
+    },
   },
-  transactionComplete: {
-    type: Boolean,
-    default: false,
-  },
-  transactionID: {
-    type: String,
-    default: "",
-  },
-  campaign: {
-    type: Schema.Types.ObjectId,
-    ref: "Campaign",
-  },
-});
+  { timestamps: true }
+);
 
-const Donation = mongoose.model("Donation", DonationSchema);
-
-module.exports = Donation;
+module.exports = mongoose.model("Donation", DonationSchema);

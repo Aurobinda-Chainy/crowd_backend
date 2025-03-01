@@ -1,75 +1,58 @@
-// const express = require("express");
-// const bodyParser = require("body-parser");
-// const cors = require("cors");
-// const app = express();
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
 
-// // -----ENV Setup----- //
-// require("dotenv").config();
-// const PORT = 4000;
-// const routes = require("./routes");
+dotenv.config(); // Load environment variables
 
-// // -----Middleware----- /
-// app.use(cors());
-// app.use(bodyParser.json());
+const app = express();
+const PORT = process.env.PORT || 4000;
 
-// // -----Routes----- //
-// // app.get("/", (req, res) => {
-// //   res.sendFile(__dirname + "/index.html");
-// // });
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+app.use(compression());
+app.use(morgan("dev"));
 
-// app.use("/api/campaign", routes.campaign);
-// app.use("/api/user", routes.user);
-// app.use("/api/donate", routes.payment);
-// app.use("/api/donation", routes.donation);
-// app.use("/api/query", routes.query);
+// Import routes
+const campaignRoutes = require("./routes/campaign");
+const userRoutes = require("./routes/user");
+const paymentRoutes = require("./routes/payment");
+const donationRoutes = require("./routes/donation");
+const queryRoutes = require("./routes/query");
 
-// app.get("*", function (req, res) {
-//   res.send("404 Error");
-// });
+// Define routes
+app.use("/api/campaign", campaignRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/donate", paymentRoutes);
+app.use("/api/donation", donationRoutes);
+app.use("/api/query", queryRoutes);
 
-// app.listen(PORT, function () {
-//   console.log("Server running successfully");
-// });
-// Importing required modules
-const express = require("express"); // Import Express framework
-const bodyParser = require("body-parser"); // Import body-parser to parse incoming request bodies
-const cors = require("cors"); // Import CORS to handle Cross-Origin Resource Sharing
-
-const app = express(); // Initialize Express app
-
-// -----ENV Setup----- //
-require("dotenv").config(); // Load environment variables from a .env file into process.env
-const PORT = 4000; // Define the port number for the server to run on
-const routes = require("./routes"); // Import custom route handlers from the 'routes' directory
-
-// -----Middleware----- //
-app.use(cors()); // Enable CORS for all routes, allowing requests from different origins
-app.use(bodyParser.json()); // Parse incoming request bodies in JSON format
-
-// -----Routes----- //
-// Define route handlers for different API endpoints
-
-// Campaign-related routes handled by routes.campaign
-app.use("/api/campaign", routes.campaign); 
-
-// User-related routes handled by routes.user
-app.use("/api/user", routes.user); 
-
-// Payment-related routes handled by routes.payment
-app.use("/api/donate", routes.payment); 
-
-// Donation history or records handled by routes.donation
-app.use("/api/donation", routes.donation); 
-
-// Queries or contact form submissions handled by routes.query
-app.use("/api/query", routes.query); 
-
-// Catch-all route for undefined endpoints (handles 404 errors)
-app.get("*", function (req, res) {
-  res.send("404 Error"); // Send a simple 404 error message for unmatched routes
+// Handle 404 errors
+app.use("*", (req, res) => {
+  res.status(404).json({ error: "Resource not found" });
 });
 
-// Start the server and listen on the defined port
-app.listen(PORT, function () {
-  console.log("Server running successfully"); // Log a success message when the server starts
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong!" });
+});
+
+// Start server
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("Shutting down server...");
+  server.close(() => {
+    console.log("Server shut down.");
+    process.exit(0);
+  });
 });

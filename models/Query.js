@@ -1,17 +1,25 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const QuerySchema = mongoose.Schema({
-  email: {
-    type: String,
-    required: [true, "Email is required"],
+const QuerySchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      trim: true,
+      lowercase: true,
+    },
+    message: {
+      type: String,
+      required: [true, "Message is required"],
+      minlength: 5,
+      maxlength: 500,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-  message: {
-    type: String,
-    required: [true, "Message is required"],
-  },
-});
+  { timestamps: true }
+);
 
-const Query = mongoose.model("Query", QuerySchema);
-
-module.exports = Query;
+module.exports = mongoose.model("Query", QuerySchema);
